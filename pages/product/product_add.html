@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product | Admin Dashboard</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/themes/default/assets/fonts/icons.woff2" as="font" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2" as="font" crossorigin>
+    
+    <!-- Semantic UI with local fallback -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" 
+          onerror="this.onerror=null;this.href='/spa/assets/semantic.min.css';">
+    
+    <!-- Alpine.js with version lock and local fallback -->
+    <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"
+            onerror="this.onerror=null;this.src='/spa/assets/alpine.min.js';"></script>
+
+    <style>
+        :root {
+            --primary-color: #1e70bf;
+            --primary-dark: #1a60a7;
+            --secondary-color: #f8f9fa;
+            --accent-color: #2185d0;
+            --text-color: #333;
+            --light-text: #767676;
+            --border-color: #e0e1e2;
+            --success-color: #21ba45;
+            --error-color: #db2828;
+            --warning-color: #f2711c;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+        
+        .admin-header {
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .admin-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .admin-subtitle {
+            color: var(--light-text);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+        
+        .page-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .breadcrumb .divider {
+            margin: 0 0.5rem;
+        }
+        
+        .form-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: var(--secondary-color);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .ui.form input:not([type]),
+        .ui.form input[type="text"],
+        .ui.form input[type="number"],
+        .ui.form textarea {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.75rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .ui.form input:focus,
+        .ui.form textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(33, 133, 208, 0.15);
+        }
+        
+        .ui.form .field > label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background-color: #f9fafb;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--accent-color);
+            background-color: #f0f7fd;
+        }
+        
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--light-text);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            color: var(--light-text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-hint {
+            font-size: 0.85rem;
+            color: var(--light-text);
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+            object-fit: contain;
+        }
+        
+        .image-preview-container {
+            position: relative;
+            margin-top: 1rem;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 4px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .remove-image-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--error-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .remove-image-btn:hover {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .error-text {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        .ui.primary.button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .ui.primary.button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .ui.button.basic {
+            background-color: white;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            border-radius: 4px;
+        }
+        
+        .ui.button.basic:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .ui.message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .ui.positive.message {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+        
+        .ui.negative.message {
+            background-color: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .page-container {
+                padding: 0 1rem;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .two.fields {
+                flex-direction: column;
+            }
+            
+            .two.fields .field {
+                width: 100% !important;
+            }
+        }
+        
+        /* Font fallbacks */
+        @font-face {
+            font-family: 'Inter';
+            font-display: swap;
+            src: local('Inter'), local('Inter-Regular'),
+                 url('https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2') format('woff2');
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div>
+            <h1 class="admin-title">K check Gadgets</h1>
+            <div class="admin-subtitle">Product Management</div>
+        </div>
+    </header>
+
+    <div class="page-container">
+        <div class="page-header">
+            <h1 class="page-title">Add New Product</h1>
+            <div class="breadcrumb">
+                <a href="#">Dashboard</a>
+                <span class="divider">/</span>
+                <a href="#">Products</a>
+                <span class="divider">/</span>
+                <span>Add New</span>
+            </div>
+        </div>
+        
+        <div x-data="{
+            baseUrl: 'http://172.17.100.14:3356/hinayon',
+            product: {
+                name: '',
+                description: '',
+                price: '',
+                stock: '',
+                image: null
+            },
+            imagePreview: null,
+            loading: false,
+            message: '',
+            errors: {},
+            validateForm() {
+                this.errors = {};
+                if (!this.product.name) this.errors.name = 'Product name is required';
+                if (!this.product.price) this.errors.price = 'Price is required';
+                if (this.product.price <= 0) this.errors.price = 'Price must be greater than 0';
+                if (!this.product.stock) this.errors.stock = 'Stock quantity is required';
+                if (this.product.stock < 0) this.errors.stock = 'Stock cannot be negative';
+                return Object.keys(this.errors).length === 0;
+            },
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Validate file size (5MB limit)
+                    if (file.size > 5 * 1024 * 1024) {
+                        this.errors.image = 'Image size should be less than 5MB';
+                        event.target.value = '';
+                        return;
+                    }
+                    
+                    // Validate file type
+                    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                        this.errors.image = 'Only JPG and PNG images are allowed';
+                        event.target.value = '';
+                        return;
+                    }
+            
+                    // Generate a clean filename with timestamp
+                    const timestamp = new Date().getTime();
+                    const fileExt = file.name.split('.').pop().toLowerCase();
+                    const fileName = `product_${timestamp}.${fileExt}`;
+            
+                    // Create new File object with clean name
+                    this.product.image = new File([file], fileName, {
+                        type: file.type,
+                        lastModified: file.lastModified,
+                    });
+            
+                    // Create preview
+                    this.imagePreview = URL.createObjectURL(file);
+                    this.errors.image = '';
+                    
+                    console.log('Image prepared:', {
+                        originalName: file.name,
+                        newName: fileName,
+                        type: file.type,
+                        size: file.size
+                    });
+                }
+            },
+            async addProduct() {
+                if (!this.validateForm()) return;
+                
+                this.loading = true;
+                try {
+                    const formData = new FormData();
+                    formData.append('name', this.product.name);
+                    formData.append('description', this.product.description);
+                    formData.append('price', this.product.price);
+                    formData.append('stock', this.product.stock);
+                    
+                    if (this.product.image) {
+                        formData.append('image', this.product.image);
+                        console.log('Uploading image:', {
+                            name: this.product.image.name,
+                            type: this.product.image.type,
+                            size: this.product.image.size
+                        });
+                    }
+
+                    const response = await fetch(`${this.baseUrl}/api/products/`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Server response:', data);
+                    
+                    if (!response.ok) {
+                        throw new Error(data.detail || data.error || 'Failed to add product');
+                    }
+
+                    // Log the created product details
+                    console.log('Created product:', {
+                        id: data.id,
+                        name: data.name,
+                        image: data.image
+                    });
+                    
+                    this.message = 'Product added successfully!';
+                    this.clearForm();
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.message = 'Error: ' + error.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+            clearForm() {
+                this.product = {
+                    name: '',
+                    description: '',
+                    price: '',
+                    stock: '',
+                    image: null
+                };
+                this.imagePreview = null;
+                this.errors = {};
+                document.getElementById('imageInput').value = '';
+            },
+            clearImage() {
+                this.product.image = null;
+                this.imagePreview = null;
+                this.errors.image = '';
+                document.getElementById('imageInput').value = '';
+            }
+        }">
+            <div class="form-card">
+                <div class="card-header">
+                    <h2 class="card-title">Product Information</h2>
+                </div>
+                
+                <div class="card-body">
+                    <form class="ui form" x-on:submit.prevent="addProduct" enctype="multipart/form-data">
+                        <h3 class="section-title">Basic Details</h3>
+                        
+                        <!-- Product Name -->
+                        <div class="field" x-bind:class="{ 'error': errors.name }">
+                            <label>Product Name</label>
+                            <input type="text" x-model="product.name" placeholder="Enter product name" required>
+                            <div class="error-text" x-show="errors.name" x-text="errors.name"></div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="field">
+                            <label>Product Description</label>
+                            <textarea x-model="product.description" rows="4" placeholder="Describe your product in detail..."></textarea>
+                        </div>
+
+                        <h3 class="section-title">Inventory Information</h3>
+                        
+                        <!-- Price and Stock -->
+                        <div class="two fields">
+                            <div class="field" x-bind:class="{ 'error': errors.price }">
+                                <label>Price</label>
+                                <div class="ui right labeled input">
+                                    <div class="ui label">$</div>
+                                    <input type="number" step="0.01" min="0.01" x-model="product.price" placeholder="0.00" required>
+                                </div>
+                                <div class="error-text" x-show="errors.price" x-text="errors.price"></div>
+                            </div>
+                            <div class="field" x-bind:class="{ 'error': errors.stock }">
+                                <label>Stock Quantity</label>
+                                <input type="number" min="0" x-model="product.stock" placeholder="0" required>
+                                <div class="error-text" x-show="errors.stock" x-text="errors.stock"></div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title">Product Image</h3>
+                        
+                        <!-- Image Upload -->
+                        <div class="field" x-bind:class="{ 'error': errors.image }">
+                            <label>Product Image</label>
+                            <input type="file" 
+                                   id="imageInput"
+                                   accept="image/jpeg,image/png"
+                                   @change="handleImageUpload"
+                                   style="display: none">
+                                   
+                            <label for="imageInput" class="upload-area" x-show="!imagePreview">
+                                <div class="upload-icon">
+                                    <i class="cloud upload icon"></i>
+                                </div>
+                                <div class="upload-text">Click or drag an image here to upload</div>
+                                <div class="upload-hint">JPG or PNG, maximum 5MB</div>
+                            </label>
+                            
+                            <div class="error-text" x-show="errors.image" x-text="errors.image"></div>
+                            
+                            <!-- Image Preview -->
+                            <div x-show="imagePreview" class="image-preview-container">
+                                <img :src="imagePreview" class="preview-image" alt="Product preview">
+                                <button type="button"
+                                        class="remove-image-btn"
+                                        @click.prevent="clearImage">
+                                    <i class="times icon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button type="button" 
+                                    class="ui button basic"
+                                    @click="clearForm">
+                                Clear
+                            </button>
+                            <button class="ui primary button" 
+                                    x-bind:class="{ 'loading': loading, 'disabled': loading }"
+                                    type="submit">
+                                Add Product
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Message Display -->
+                <div class="card-body" x-show="message" style="padding-top: 0;">
+                    <div class="ui message" 
+                         x-text="message"
+                         x-bind:class="{ 
+                             'positive': message.includes('successfully'), 
+                             'negative': message.includes('Error') || message.includes('Failed') 
+                         }">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
